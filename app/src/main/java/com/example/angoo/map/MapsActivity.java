@@ -21,11 +21,16 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,LocationListener {
     private static final int REQUEST_LOCATION = 2;
     private GoogleMap mMap;
     //持續更新位置存取更多資訊時要和goolge建立連線
@@ -91,6 +96,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //CameraUpdate地圖元件的視點
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        //台北101位置
+        LatLng taipei101 = new LatLng(25.037117,121.563089);
+        //先移動視角
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(taipei101,18));
+        //在增加標記為101
+        Marker marker = mMap.addMarker(new MarkerOptions()
+                .position(taipei101)
+                .title("翠絲")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.p))
+                .snippet("18歲"));
+        marker.showInfoWindow();
+
+        LatLng taipeicityhall = new LatLng(25.037542,121.564433);
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(taipeicityhall,18));
+        Marker marker1 = mMap.addMarker(new MarkerOptions()
+                .position(taipeicityhall)
+                .title("桃樂絲")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.bear))
+                .snippet("19歲"));
+        marker1.showInfoWindow(); //呼叫此方法顯示視窗 不需要點圖示也能顯示資訊
     }
 
     @Override
@@ -158,13 +184,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     //連線成功時呼叫
+    @SuppressLint("MissingPermission")
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
+    public void onConnected(@Nullable Bundle bundle) { /* 增加特定目標時註腳掉避免 目前位置會影響到101
         @SuppressLint("MissingPermission")
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if(location!=null) {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),18));
         }
+        //註冊位置更新listener介面
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,locationRequest,this);
+*/
     }
 
     @Override
@@ -175,5 +205,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if(location!=null) {
+            Log.d("LOCATION",location.getLatitude()+","+location.getLongitude());
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),18));
+        }
     }
 }
